@@ -97,6 +97,7 @@ public class BluetoothScanActivity extends AppCompatActivity {
     }
 
     public void init() {
+        checkPermissions();
         btn_scan = findViewById(R.id.btn_scan);
         mRecylerView = findViewById(R.id.rv_ble);
         beacons = Collections.synchronizedList(new ArrayList<Beacon>());
@@ -134,6 +135,7 @@ public class BluetoothScanActivity extends AppCompatActivity {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
+                checkPermissions();
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
                 //                                          int[] grantResults)
@@ -242,7 +244,7 @@ public class BluetoothScanActivity extends AppCompatActivity {
             }
 
             displayBeaconsList();
-            connectToDevice(btDevice);
+          //  connectToDevice(btDevice);
         }
 
         @Override
@@ -272,15 +274,6 @@ public class BluetoothScanActivity extends AppCompatActivity {
             Log.e("Scan Failed", "Error Code: " + errorCode);
         }
     };
-
-//    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-//            (device, rssi, scanRecord) -> runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Log.i("onLeScan", device.toString());
-//                    connectToDevice(device);
-//                }
-//            });
 
     public void connectToDevice(BluetoothDevice device) {
         if (mGatt == null) {
@@ -373,14 +366,6 @@ public class BluetoothScanActivity extends AppCompatActivity {
         adapter = new BeaconAdapter(this, beacons);
         mRecylerView.setLayoutManager(linearLayoutManager);
         mRecylerView.setAdapter(adapter);
-
-//        recyclerView = (RecyclerView) findViewById(R.id.beacons_recycler_view);
-//        layoutManager = new LinearLayoutManager(this);
-//
-//        adapter = new BeaconAdapter(this, beacons);
-//
-//        recyclerView.setLayoutManager(layoutManager);
-//        recyclerView.setAdapter(adapter);
     }
 
     public void addBeacon(Beacon iBeacon) {
@@ -447,7 +432,7 @@ public class BluetoothScanActivity extends AppCompatActivity {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
-            checkPermissions();
+
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
             return;
@@ -456,6 +441,7 @@ public class BluetoothScanActivity extends AppCompatActivity {
         for (int i = 0; i < beacons.size(); i++) {
             Log.e("deviceList", beacons.get(i).toString() + "pos : " + i);
         }
+
         Intent intent = new Intent(BluetoothScanActivity.this, MainActivity.class);
         intent.putStringArrayListExtra("bleDevicesList", arrayList_bleDevices);
         startActivity(intent);

@@ -1,6 +1,7 @@
 package com.urushiLeds.prizeleds.Adapter;
 import android.bluetooth.le.ScanCallback;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +38,12 @@ public class BeaconAdapter extends RecyclerView.Adapter<BeaconAdapter.DeviceView
     @Override
     public void onBindViewHolder(DeviceViewHolder holder, int position) {
 
-        holder.tv_bleadress.setText(beacons.get(position).getName());
-        holder.tv_bleinfo.setText(beacons.get(position).getSerialNumber());
+        holder.tv_bleadress.setText(beacons.get(position).getAddress());
+        holder.tv_bleinfo.setText(beacons.get(position).getName());
+
+        Log.i("address",beacons.get(position).getAddress() );
+        Log.i("serial",beacons.get(position).getSerialNumber() );
+        Log.i("name",beacons.get(position).getName() );
 //        holder.rssiView.setText(beacons.get(position).getRssi());
 
         if (position % 2 == 0) {
