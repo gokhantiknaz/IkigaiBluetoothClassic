@@ -1,9 +1,11 @@
-package com.urushiLeds.prizeleds.Fragment;
+package com.mythleds.ikigai.Fragment;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -25,10 +27,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import com.urushiLeds.prizeleds.Class.DateTime;
-import com.urushiLeds.prizeleds.Class.LocalDataManager;
+import com.mythleds.ikigai.Class.DateTime;
+import com.mythleds.ikigai.Class.LocalDataManager;
 import com.urushi.prizeleds.R;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -40,7 +43,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.urushiLeds.prizeleds.Class.Template;
+import com.mythleds.ikigai.Class.Template;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,7 +90,6 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
     private ArrayList<Entry> entries6 = new ArrayList<>();
     private ArrayList<Entry> entries7 = new ArrayList<>();
     private ArrayList<Entry> entries8 = new ArrayList<>();
-
     private ArrayList<Template> templates = new ArrayList<>();
     ArrayList<String> channels = new ArrayList<>();
     final String[] weekdays = {"00:00-08:00", "08:00-16:00", "16:00-23:59"};
@@ -214,9 +216,12 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             }
         });
 
+
         savetmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 showAddItemDialog(getContext());
 
             }

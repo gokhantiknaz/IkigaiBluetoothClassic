@@ -1,11 +1,9 @@
-package com.urushiLeds.prizeleds.Fragment;
+package com.mythleds.ikigai.Fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -14,9 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.urushi.prizeleds.R;
-import com.urushiLeds.prizeleds.Class.LocalDataManager;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import com.mythleds.ikigai.Class.LocalDataManager;
 
 public class Fragment3 extends Fragment {
     private TextView tv_testSeekBar1,tv_testSeekBar2,tv_testSeekBar3,tv_testSeekBar4,tv_testSeekBar5,tv_testSeekBar6,tv_testSeekBar7,tv_testSeekBar8;

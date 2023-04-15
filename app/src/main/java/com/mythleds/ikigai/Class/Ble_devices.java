@@ -1,4 +1,4 @@
-package com.urushiLeds.prizeleds.Class;
+package com.mythleds.ikigai.Class;
 
 public class Ble_devices {
     String device_name,device_id;

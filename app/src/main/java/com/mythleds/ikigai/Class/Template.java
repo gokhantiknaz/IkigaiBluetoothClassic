@@ -1,4 +1,4 @@
-package com.urushiLeds.prizeleds.Class;
+package com.mythleds.ikigai.Class;
 
 import java.io.Serializable;
 

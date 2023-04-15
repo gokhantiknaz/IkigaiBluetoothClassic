@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context="com.urushiLeds.prizeleds.ColorPicker"
+        tools:context="com.mythleds.ikigai.ColorPicker"
         tools:ignore="HardcodedText">
 
         <!--Give all widgets, the proper id to

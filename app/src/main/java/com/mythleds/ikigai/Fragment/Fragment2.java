@@ -1,4 +1,4 @@
-package com.urushiLeds.prizeleds.Fragment;
+package com.mythleds.ikigai.Fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.urushiLeds.prizeleds.Class.LocalDataManager;
+import com.mythleds.ikigai.Class.LocalDataManager;
 import com.urushi.prizeleds.R;
 
 public class Fragment2 extends Fragment {

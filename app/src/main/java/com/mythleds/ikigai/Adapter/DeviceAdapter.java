@@ -1,4 +1,4 @@
-package com.urushiLeds.prizeleds.Adapter;
+package com.mythleds.ikigai.Adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.urushiLeds.prizeleds.Class.Ble_devices;
-import com.urushiLeds.prizeleds.Interface.CallBackDevice;
+import com.mythleds.ikigai.Class.Ble_devices;
+import com.mythleds.ikigai.Interface.CallBackDevice;
 import com.urushi.prizeleds.R;
 
 import java.util.ArrayList;

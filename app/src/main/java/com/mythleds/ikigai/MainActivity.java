@@ -1,6 +1,7 @@
-package com.urushiLeds.prizeleds;
+package com.mythleds.ikigai;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -30,14 +31,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.urushiLeds.prizeleds.Class.LocalDataManager;
-import com.urushiLeds.prizeleds.Fragment.Fragment1;
-import com.urushiLeds.prizeleds.Fragment.Fragment2;
-import com.urushiLeds.prizeleds.Fragment.Fragment3;
+import com.mythleds.ikigai.Class.LocalDataManager;
+import com.mythleds.ikigai.Fragment.Fragment1;
+import com.mythleds.ikigai.Fragment.Fragment2;
+import com.mythleds.ikigai.Fragment.Fragment3;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import com.urushi.prizeleds.R;
-import com.urushiLeds.prizeleds.Fragment.Fragment4;
+import com.mythleds.ikigai.Fragment.Fragment4;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -179,40 +180,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void init() {
 
-        checkPermissions(MainActivity.this, this);
-
         tv_status = findViewById(R.id.tv_status);
         bottomNavigationView = findViewById(R.id.bottom_nav);
         fab_bottom = findViewById(R.id.fab_bottom);
         bottomNavigationView.setBackground(null);
         bleList = getIntent().getStringArrayListExtra("bleDevicesList");
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    }
-
-
-    public static void checkPermissions(Activity activity, Context context) {
-        int PERMISSION_ALL = 1;
-        String[] PERMISSIONS = {
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.BLUETOOTH_PRIVILEGED,
-        };
-
-        if (!hasPermissions(context, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(activity, PERMISSIONS, PERMISSION_ALL);
-        }
-    }
-
-    public static boolean hasPermissions(Context context, String... permissions) {
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     @Override

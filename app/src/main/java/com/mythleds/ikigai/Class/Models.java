@@ -1,4 +1,4 @@
-package com.urushiLeds.prizeleds.Class;
+package com.mythleds.ikigai.Class;
 
 public class Models {
     private String modelName,channel1,channel2,channel3,channel4,channel5,channel6;

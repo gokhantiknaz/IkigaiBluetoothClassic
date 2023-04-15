@@ -7,7 +7,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId 'com.myth.ikigai'
+        applicationId 'com.mythleds.ikigai'
         minSdk 24
         targetSdk 33
         versionCode 16

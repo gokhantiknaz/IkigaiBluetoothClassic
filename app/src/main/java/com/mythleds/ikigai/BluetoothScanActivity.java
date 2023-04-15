@@ -1,30 +1,35 @@
-package com.urushiLeds.prizeleds;
+package com.mythleds.ikigai;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.urushiLeds.prizeleds.Adapter.DeviceAdapter;
-import com.urushiLeds.prizeleds.Class.Ble_devices;
-import com.urushiLeds.prizeleds.Interface.CallBackDevice;
+import com.mythleds.ikigai.Adapter.DeviceAdapter;
+import com.mythleds.ikigai.Class.Ble_devices;
+import com.mythleds.ikigai.Interface.CallBackDevice;
 import com.urushi.prizeleds.R;
 
 import java.util.ArrayList;
 import java.util.Set;
 
+@RequiresApi(api = Build.VERSION_CODES.S)
 public class BluetoothScanActivity extends AppCompatActivity {
 
     private int ble_request_en;
@@ -106,11 +111,8 @@ public class BluetoothScanActivity extends AppCompatActivity {
         }
     }
 
-    private static String[] PERMISSIONS_BLUE = {
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_PRIVILEGED
-    };
-    private static String[] PERMISSIONS_STORAGE = {
+
+    private static String[] PERMISSIONS_ALL = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -120,40 +122,16 @@ public class BluetoothScanActivity extends AppCompatActivity {
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.BLUETOOTH_PRIVILEGED
     };
-    private static String[] PERMISSIONS_LOCATION = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_PRIVILEGED
-    };
+
 
     private void checkPermissions(){
-        int permission1 = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        int permission2 = ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN);
         int permission3 = ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT);
 
         if (permission3 != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
             ActivityCompat.requestPermissions(
                     this,
-                    PERMISSIONS_BLUE,
-                    1
-            );
-        }
-
-        else if (permission1 != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    1
-            );
-        } else if (permission2 != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_LOCATION,
+                    PERMISSIONS_ALL,
                     1
             );
         }

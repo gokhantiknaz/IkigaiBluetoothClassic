@@ -1,4 +1,4 @@
-package com.urushiLeds.prizeleds;
+package com.mythleds.ikigai;
 
 import androidx.appcompat.app.AppCompatActivity;
 

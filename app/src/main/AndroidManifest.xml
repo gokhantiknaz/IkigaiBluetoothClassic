@@ -21,9 +21,9 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents">
-        <activity android:name="com.urushiLeds.prizeleds.MainActivity" />
-        <activity android:name="com.urushiLeds.prizeleds.BluetoothScanActivity" />
-        <activity android:name="com.urushiLeds.prizeleds.SplashScreenActivity"
+        <activity android:name="com.mythleds.ikigai.MainActivity" />
+        <activity android:name="com.mythleds.ikigai.BluetoothScanActivity" />
+        <activity android:name="com.mythleds.ikigai.SplashScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
