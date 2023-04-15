@@ -9,7 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.urushi.prizeleds.R;
+import com.mythleds.ikigai.R;
+
 
 public class FragmentSetTime extends Fragment {
 

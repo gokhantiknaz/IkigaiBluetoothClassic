@@ -1,11 +1,9 @@
 package com.mythleds.ikigai.Fragment;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -27,12 +25,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+
 
 import com.mythleds.ikigai.Class.DateTime;
 import com.mythleds.ikigai.Class.LocalDataManager;
-import com.urushi.prizeleds.R;
+
+
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -44,6 +43,7 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.mythleds.ikigai.Class.Template;
+import com.mythleds.ikigai.R;
 
 import java.io.File;
 import java.io.FileInputStream;

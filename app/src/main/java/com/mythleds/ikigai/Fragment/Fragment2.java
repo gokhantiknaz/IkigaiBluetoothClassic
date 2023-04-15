@@ -11,8 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.mythleds.ikigai.R;
 import com.mythleds.ikigai.Class.LocalDataManager;
-import com.urushi.prizeleds.R;
 
 public class Fragment2 extends Fragment {
 

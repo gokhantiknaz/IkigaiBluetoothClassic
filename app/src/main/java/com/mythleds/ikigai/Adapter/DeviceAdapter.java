@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mythleds.ikigai.Class.Ble_devices;
 import com.mythleds.ikigai.Interface.CallBackDevice;
-import com.urushi.prizeleds.R;
+import com.mythleds.ikigai.R;
 
 import java.util.ArrayList;
 
