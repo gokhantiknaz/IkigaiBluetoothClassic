@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,7 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private Fragment fragmentTemp;
     private TextView tv_status;
     private String device_id;
-    private byte[] txData = new byte[109];
+    private int i = 0;
+    private final byte[] txData = new byte[109];
     private int trial = 0, trial_ack = 0;
     private boolean isTxFull = false;
     BluetoothAdapter bluetoothAdapter;
@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
     static final int STATE_MESSAGE_ACK_WAIT = 5;
     static final int STATE_MESSAGE_WRONG_ACK_RECEIVED = 6;
 
-    private String tempMsg = null, hour, minute;
+    private String hour;
+    private String minute;
 
     private static final UUID ESP32_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -104,12 +105,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(getpermission);
             }
         }
-
-        //    modelsArrayList.add(new Models("CUSTOM","Channel 1","Channel 2","Channel 3","Channel 4","Channel 5","Channel 6",6));
-        //    modelsArrayList.add(new Models("F-MAJOR","Cool White","Wide Spectrum",null,null,null,null,2));
-        //    modelsArrayList.add(new Models("S-MAJOR","Deep Blue","Aqua Sun",null,null,null,null,2));
-        //     modelsArrayList.add(new Models("F-MAX","Cool White","Full Spectrum","Reddish White","Blueish White",null,null,4));
-        //   modelsArrayList.add(new Models("S-MAX","Deep Blue","Aqua Sun","Magenta","Sky Blue",null,null,4));
 
         localDataManager.setSharedPreference(getApplicationContext(), "test_model", "false");
 
@@ -195,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static void checkPermissions(Activity activity, Context context){
+    public static void checkPermissions(Activity activity, Context context) {
         int PERMISSION_ALL = 1;
         String[] PERMISSIONS = {
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -204,8 +199,8 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.BLUETOOTH_PRIVILEGED,
         };
 
-        if(!hasPermissions(context, PERMISSIONS)){
-            ActivityCompat.requestPermissions( activity, PERMISSIONS, PERMISSION_ALL);
+        if (!hasPermissions(context, PERMISSIONS)) {
+            ActivityCompat.requestPermissions(activity, PERMISSIONS, PERMISSION_ALL);
         }
     }
 
@@ -219,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu, menu);
@@ -248,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
                     tv_status.setText("Connected ... ");
                     tv_status.setTextColor(Color.GREEN);
                     Log.e(TAG, "v");
-                    if (bleList.size() > sendList.size()) {
+                    if (i > 0) {
                         if (socket.isConnected() && isTxFull) {
                             sendReceive.write(txData);
                             sendList.remove(device.getAddress());
@@ -257,8 +253,9 @@ public class MainActivity extends AppCompatActivity {
                             message.what = STATE_MESSAGE_ACK_WAIT;
                             handler.sendMessage(message);
                         }
-                    } else
+                    } else {
                         fab_bottom.setEnabled(true);
+                    }
                     progress.dismiss();
                     break;
                 case STATE_CONNECTION_FAILED:
@@ -276,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 case STATE_MESSAGE_RECEIVED:
-                    tempMsg = getMessage(msg);
+                    String tempMsg = getMessage(msg);
                     timerHandler.removeCallbacks(timerRunnable);
                     trial = 0;
                     if (tempMsg.equals(DATA_ACK)) {
@@ -296,8 +293,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 case STATE_MESSAGE_NEXTCONNECTION_WAIT:
+                    i++;
                     String test_model = localDataManager.getSharedPreference(getApplicationContext(), "test_model", "false");
                     boolean isSent = sendList.size() > 0;
+
+                    if (test_model.equals("test")) {
+                        isSent = i < bleList.size();
+                    }
                     if (isSent) {
                         Log.e(TAG, "Diğer cihaza bağlanıyor ...");
                         tv_status.setText("Connecting...");
@@ -389,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
     public void fab_bottom(View view) {
         // anlık saat ve dakika bilgisini al
         getDateTime();
-
+        i = 0;
         sendList = (ArrayList<String>) bleList.clone();
 
         fab_bottom.setEnabled(false);
@@ -435,656 +437,223 @@ public class MainActivity extends AppCompatActivity {
                 txData[i] = 0x00;
             }
             txData[82] = 0x66;
-        } else {
-            if (model.equals("RGBW")) {
-                txData[0] = 0x65;
-                txData[1] = 0x01;
-                txData[2] = 0x01;
-
-                String fmax_cw_gd_f = "0";
-                String fmax_cw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDgdh", "07");
-                String fmax_cw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDgdm", "00");
-                txData[3] = (byte) Integer.parseInt(fmax_cw_gd_f);
-                txData[4] = (byte) Integer.parseInt(fmax_cw_gd_h);
-                txData[5] = (byte) Integer.parseInt(fmax_cw_gd_m);
-                String fmax_cw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDf2", "0");
-                String fmax_cw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDgh", "12");
-                String fmax_cw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDgm", "00");
-                txData[6] = (byte) Integer.parseInt(fmax_cw_g_f);
-                txData[7] = (byte) Integer.parseInt(fmax_cw_g_h);
-                txData[8] = (byte) Integer.parseInt(fmax_cw_g_m);
-                String fmax_cw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDf3", "0");
-                String fmax_cw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDgbh", "17");
-                String fmax_cw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDgbm", "00");
-                txData[9] = (byte) Integer.parseInt(fmax_cw_gb_f);
-                txData[10] = (byte) Integer.parseInt(fmax_cw_gb_h);
-                txData[11] = (byte) Integer.parseInt(fmax_cw_gb_m);
-                String fmax_cw_a_f = "0";
-                String fmax_cw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDah", "22");
-                String fmax_cw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWREDam", "00");
-                txData[12] = (byte) Integer.parseInt(fmax_cw_a_f);
-                txData[13] = (byte) Integer.parseInt(fmax_cw_a_h);
-                txData[14] = (byte) Integer.parseInt(fmax_cw_a_m);
-
-                txData[15] = 0x02;
-                String fmax_fs_gd_f = "0";
-                String fmax_fs_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENgdh", "07");
-                String fmax_fs_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENgdm", "00");
-                txData[16] = (byte) Integer.parseInt(fmax_fs_gd_f);
-                txData[17] = (byte) Integer.parseInt(fmax_fs_gd_h);
-                txData[18] = (byte) Integer.parseInt(fmax_fs_gd_m);
-                String fmax_fs_g_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENf2", "0");
-                String fmax_fs_g_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENgh", "12");
-                String fmax_fs_g_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENgm", "00");
-                txData[19] = (byte) Integer.parseInt(fmax_fs_g_f);
-                txData[20] = (byte) Integer.parseInt(fmax_fs_g_h);
-                txData[21] = (byte) Integer.parseInt(fmax_fs_g_m);
-                String fmax_fs_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENf3", "0");
-                String fmax_fs_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENgbh", "17");
-                String fmax_fs_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENgbm", "00");
-                txData[22] = (byte) Integer.parseInt(fmax_fs_gb_f);
-                txData[23] = (byte) Integer.parseInt(fmax_fs_gb_h);
-                txData[24] = (byte) Integer.parseInt(fmax_fs_gb_m);
-                String fmax_fs_a_f = "0";
-                String fmax_fs_a_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENah", "22");
-                String fmax_fs_a_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWGREENam", "00");
-                txData[25] = (byte) Integer.parseInt(fmax_fs_a_f);
-                txData[26] = (byte) Integer.parseInt(fmax_fs_a_h);
-                txData[27] = (byte) Integer.parseInt(fmax_fs_a_m);
-
-                txData[28] = 0x03;
-                String fmax_rw_gd_f = "0";
-                String fmax_rw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEgdh", "07");
-                String fmax_rw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEgdm", "00");
-                txData[29] = (byte) Integer.parseInt(fmax_rw_gd_f);
-                txData[30] = (byte) Integer.parseInt(fmax_rw_gd_h);
-                txData[31] = (byte) Integer.parseInt(fmax_rw_gd_m);
-                String fmax_rw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEf2", "0");
-                String fmax_rw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEgh", "12");
-                String fmax_rw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEgm", "00");
-                txData[32] = (byte) Integer.parseInt(fmax_rw_g_f);
-                txData[33] = (byte) Integer.parseInt(fmax_rw_g_h);
-                txData[34] = (byte) Integer.parseInt(fmax_rw_g_m);
-                String fmax_rw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEf3", "0");
-                String fmax_rw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEgbh", "17");
-                String fmax_rw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEgbm", "00");
-                txData[35] = (byte) Integer.parseInt(fmax_rw_gb_f);
-                txData[36] = (byte) Integer.parseInt(fmax_rw_gb_h);
-                txData[37] = (byte) Integer.parseInt(fmax_rw_gb_m);
-                String fmax_rw_a_f = "0";
-                String fmax_rw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEah", "22");
-                String fmax_rw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWBLUEam", "00");
-                txData[38] = (byte) Integer.parseInt(fmax_rw_a_f);
-                txData[39] = (byte) Integer.parseInt(fmax_rw_a_h);
-                txData[40] = (byte) Integer.parseInt(fmax_rw_a_m);
-
-                txData[41] = 0x04;
-                String fmax_bw_gd_f = "0";
-                String fmax_bw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEgdh", "07");
-                String fmax_bw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEgdm", "00");
-                txData[42] = (byte) Integer.parseInt(fmax_bw_gd_f);
-                txData[43] = (byte) Integer.parseInt(fmax_bw_gd_h);
-                txData[44] = (byte) Integer.parseInt(fmax_bw_gd_m);
-                String fmax_bw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEf2", "0");
-                String fmax_bw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEgh", "12");
-                String fmax_bw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEgm", "00");
-                txData[45] = (byte) Integer.parseInt(fmax_bw_g_f);
-                txData[46] = (byte) Integer.parseInt(fmax_bw_g_h);
-                txData[47] = (byte) Integer.parseInt(fmax_bw_g_m);
-                String fmax_bw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEf3", "0");
-                String fmax_bw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEgbh", "17");
-                String fmax_bw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEgbm", "00");
-                txData[48] = (byte) Integer.parseInt(fmax_bw_gb_f);
-                txData[49] = (byte) Integer.parseInt(fmax_bw_gb_h);
-                txData[50] = (byte) Integer.parseInt(fmax_bw_gb_m);
-                String fmax_bw_a_f = "0";
-                String fmax_bw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEah", "22");
-                String fmax_bw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "RGBWHITEam", "00");
-                txData[51] = (byte) Integer.parseInt(fmax_bw_a_f);
-                txData[52] = (byte) Integer.parseInt(fmax_bw_a_h);
-                txData[53] = (byte) Integer.parseInt(fmax_bw_a_m);
-
-                txData[56] = 0x66;
-
-            } else if (model.equals("SPECT+")) {
-                txData[0] = 0x65;
-                txData[1] = 0x02;
-                txData[2] = 0x01;
-
-                String fmax_cw_gd_f = "0";
-                String fmax_cw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kgdh", "07");
-                String fmax_cw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kgdm", "00");
-                txData[3] = (byte) Integer.parseInt(fmax_cw_gd_f);
-                txData[4] = (byte) Integer.parseInt(fmax_cw_gd_h);
-                txData[5] = (byte) Integer.parseInt(fmax_cw_gd_m);
-                String fmax_cw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kf2", "0");
-                String fmax_cw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kgh", "12");
-                String fmax_cw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kgm", "00");
-                txData[6] = (byte) Integer.parseInt(fmax_cw_g_f);
-                txData[7] = (byte) Integer.parseInt(fmax_cw_g_h);
-                txData[8] = (byte) Integer.parseInt(fmax_cw_g_m);
-                String fmax_cw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kf3", "0");
-                String fmax_cw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kgbh", "17");
-                String fmax_cw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kgbm", "00");
-                txData[9] = (byte) Integer.parseInt(fmax_cw_gb_f);
-                txData[10] = (byte) Integer.parseInt(fmax_cw_gb_h);
-                txData[11] = (byte) Integer.parseInt(fmax_cw_gb_m);
-                String fmax_cw_a_f = "0";
-                String fmax_cw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kah", "22");
-                String fmax_cw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+5000Kam", "00");
-                txData[12] = (byte) Integer.parseInt(fmax_cw_a_f);
-                txData[13] = (byte) Integer.parseInt(fmax_cw_a_h);
-                txData[14] = (byte) Integer.parseInt(fmax_cw_a_m);
-
-                txData[15] = 0x02;
-                String fmax_fs_gd_f = "0";
-                String fmax_fs_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kgdh", "07");
-                String fmax_fs_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kgdm", "00");
-                txData[16] = (byte) Integer.parseInt(fmax_fs_gd_f);
-                txData[17] = (byte) Integer.parseInt(fmax_fs_gd_h);
-                txData[18] = (byte) Integer.parseInt(fmax_fs_gd_m);
-                String fmax_fs_g_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kf2", "0");
-                String fmax_fs_g_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kgh", "12");
-                String fmax_fs_g_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kgm", "00");
-                txData[19] = (byte) Integer.parseInt(fmax_fs_g_f);
-                txData[20] = (byte) Integer.parseInt(fmax_fs_g_h);
-                txData[21] = (byte) Integer.parseInt(fmax_fs_g_m);
-                String fmax_fs_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kf3", "0");
-                String fmax_fs_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kgbh", "17");
-                String fmax_fs_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kgbm", "00");
-                txData[22] = (byte) Integer.parseInt(fmax_fs_gb_f);
-                txData[23] = (byte) Integer.parseInt(fmax_fs_gb_h);
-                txData[24] = (byte) Integer.parseInt(fmax_fs_gb_m);
-                String fmax_fs_a_f = "0";
-                String fmax_fs_a_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kah", "22");
-                String fmax_fs_a_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+6500Kam", "00");
-                txData[25] = (byte) Integer.parseInt(fmax_fs_a_f);
-                txData[26] = (byte) Integer.parseInt(fmax_fs_a_h);
-                txData[27] = (byte) Integer.parseInt(fmax_fs_a_m);
-
-                txData[28] = 0x03;
-                String fmax_rw_gd_f = "0";
-                String fmax_rw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kgdh", "07");
-                String fmax_rw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kgdm", "00");
-                txData[29] = (byte) Integer.parseInt(fmax_rw_gd_f);
-                txData[30] = (byte) Integer.parseInt(fmax_rw_gd_h);
-                txData[31] = (byte) Integer.parseInt(fmax_rw_gd_m);
-                String fmax_rw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kf2", "0");
-                String fmax_rw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kgh", "12");
-                String fmax_rw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kgm", "00");
-                txData[32] = (byte) Integer.parseInt(fmax_rw_g_f);
-                txData[33] = (byte) Integer.parseInt(fmax_rw_g_h);
-                txData[34] = (byte) Integer.parseInt(fmax_rw_g_m);
-                String fmax_rw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kf3", "0");
-                String fmax_rw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kgbh", "17");
-                String fmax_rw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kgbm", "00");
-                txData[35] = (byte) Integer.parseInt(fmax_rw_gb_f);
-                txData[36] = (byte) Integer.parseInt(fmax_rw_gb_h);
-                txData[37] = (byte) Integer.parseInt(fmax_rw_gb_m);
-                String fmax_rw_a_f = "0";
-                String fmax_rw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kah", "22");
-                String fmax_rw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+9000Kam", "00");
-                txData[38] = (byte) Integer.parseInt(fmax_rw_a_f);
-                txData[39] = (byte) Integer.parseInt(fmax_rw_a_h);
-                txData[40] = (byte) Integer.parseInt(fmax_rw_a_m);
-
-                txData[41] = 0x04;
-                String fmax_bw_gd_f = "0";
-                String fmax_bw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAgdh", "07");
-                String fmax_bw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAgdm", "00");
-                txData[42] = (byte) Integer.parseInt(fmax_bw_gd_f);
-                txData[43] = (byte) Integer.parseInt(fmax_bw_gd_h);
-                txData[44] = (byte) Integer.parseInt(fmax_bw_gd_m);
-                String fmax_bw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAf2", "0");
-                String fmax_bw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAgh", "12");
-                String fmax_bw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAgm", "00");
-                txData[45] = (byte) Integer.parseInt(fmax_bw_g_f);
-                txData[46] = (byte) Integer.parseInt(fmax_bw_g_h);
-                txData[47] = (byte) Integer.parseInt(fmax_bw_g_m);
-                String fmax_bw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAf3", "0");
-                String fmax_bw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAgbh", "17");
-                String fmax_bw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAgbm", "00");
-                txData[48] = (byte) Integer.parseInt(fmax_bw_gb_f);
-                txData[49] = (byte) Integer.parseInt(fmax_bw_gb_h);
-                txData[50] = (byte) Integer.parseInt(fmax_bw_gb_m);
-                String fmax_bw_a_f = "0";
-                String fmax_bw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAah", "22");
-                String fmax_bw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "SPECTRUM+MAGENTAam", "00");
-                txData[51] = (byte) Integer.parseInt(fmax_bw_a_f);
-                txData[52] = (byte) Integer.parseInt(fmax_bw_a_h);
-                txData[53] = (byte) Integer.parseInt(fmax_bw_a_m);
-
-                txData[56] = 0x66;
-            } else if (model.equals("WIDE SPECT")) {
-                txData[0] = 0x65;
-                txData[1] = 0x03;
-                txData[2] = 0x01;
-
-                String fmax_cw_gd_f = "0";
-                String fmax_cw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEgdh", "07");
-                String fmax_cw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEgdm", "00");
-                txData[3] = (byte) Integer.parseInt(fmax_cw_gd_f);
-                txData[4] = (byte) Integer.parseInt(fmax_cw_gd_h);
-                txData[5] = (byte) Integer.parseInt(fmax_cw_gd_m);
-                String fmax_cw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEf2", "0");
-                String fmax_cw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEgh", "12");
-                String fmax_cw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEgm", "00");
-                txData[6] = (byte) Integer.parseInt(fmax_cw_g_f);
-                txData[7] = (byte) Integer.parseInt(fmax_cw_g_h);
-                txData[8] = (byte) Integer.parseInt(fmax_cw_g_m);
-                String fmax_cw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEf3", "0");
-                String fmax_cw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEgbh", "17");
-                String fmax_cw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEgbm", "00");
-                txData[9] = (byte) Integer.parseInt(fmax_cw_gb_f);
-                txData[10] = (byte) Integer.parseInt(fmax_cw_gb_h);
-                txData[11] = (byte) Integer.parseInt(fmax_cw_gb_m);
-                String fmax_cw_a_f = "0";
-                String fmax_cw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEah", "22");
-                String fmax_cw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT REDDISH WHITEam", "00");
-                txData[12] = (byte) Integer.parseInt(fmax_cw_a_f);
-                txData[13] = (byte) Integer.parseInt(fmax_cw_a_h);
-                txData[14] = (byte) Integer.parseInt(fmax_cw_a_m);
-
-                txData[15] = 0x02;
-                String fmax_fs_gd_f = "0";
-                String fmax_fs_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEgdh", "07");
-                String fmax_fs_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEgdm", "00");
-                txData[16] = (byte) Integer.parseInt(fmax_fs_gd_f);
-                txData[17] = (byte) Integer.parseInt(fmax_fs_gd_h);
-                txData[18] = (byte) Integer.parseInt(fmax_fs_gd_m);
-                String fmax_fs_g_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEf2", "0");
-                String fmax_fs_g_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEgh", "12");
-                String fmax_fs_g_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEgm", "00");
-                txData[19] = (byte) Integer.parseInt(fmax_fs_g_f);
-                txData[20] = (byte) Integer.parseInt(fmax_fs_g_h);
-                txData[21] = (byte) Integer.parseInt(fmax_fs_g_m);
-                String fmax_fs_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEf3", "0");
-                String fmax_fs_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEgbh", "17");
-                String fmax_fs_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEgbm", "00");
-                txData[22] = (byte) Integer.parseInt(fmax_fs_gb_f);
-                txData[23] = (byte) Integer.parseInt(fmax_fs_gb_h);
-                txData[24] = (byte) Integer.parseInt(fmax_fs_gb_m);
-                String fmax_fs_a_f = "0";
-                String fmax_fs_a_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEah", "22");
-                String fmax_fs_a_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT GREENISH WHITEam", "00");
-                txData[25] = (byte) Integer.parseInt(fmax_fs_a_f);
-                txData[26] = (byte) Integer.parseInt(fmax_fs_a_h);
-                txData[27] = (byte) Integer.parseInt(fmax_fs_a_m);
-
-                txData[28] = 0x03;
-                String fmax_rw_gd_f = "0";
-                String fmax_rw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEgdh", "07");
-                String fmax_rw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEgdm", "00");
-                txData[29] = (byte) Integer.parseInt(fmax_rw_gd_f);
-                txData[30] = (byte) Integer.parseInt(fmax_rw_gd_h);
-                txData[31] = (byte) Integer.parseInt(fmax_rw_gd_m);
-                String fmax_rw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEf2", "0");
-                String fmax_rw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEgh", "12");
-                String fmax_rw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEgm", "00");
-                txData[32] = (byte) Integer.parseInt(fmax_rw_g_f);
-                txData[33] = (byte) Integer.parseInt(fmax_rw_g_h);
-                txData[34] = (byte) Integer.parseInt(fmax_rw_g_m);
-                String fmax_rw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEf3", "0");
-                String fmax_rw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEgbh", "17");
-                String fmax_rw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEgbm", "00");
-                txData[35] = (byte) Integer.parseInt(fmax_rw_gb_f);
-                txData[36] = (byte) Integer.parseInt(fmax_rw_gb_h);
-                txData[37] = (byte) Integer.parseInt(fmax_rw_gb_m);
-                String fmax_rw_a_f = "0";
-                String fmax_rw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEah", "22");
-                String fmax_rw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT BLUEISH WHITEam", "00");
-                txData[38] = (byte) Integer.parseInt(fmax_rw_a_f);
-                txData[39] = (byte) Integer.parseInt(fmax_rw_a_h);
-                txData[40] = (byte) Integer.parseInt(fmax_rw_a_m);
-
-                txData[41] = 0x04;
-                String fmax_bw_gd_f = "0";
-                String fmax_bw_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEgdh", "07");
-                String fmax_bw_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEgdm", "00");
-                txData[42] = (byte) Integer.parseInt(fmax_bw_gd_f);
-                txData[43] = (byte) Integer.parseInt(fmax_bw_gd_h);
-                txData[44] = (byte) Integer.parseInt(fmax_bw_gd_m);
-                String fmax_bw_g_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEf2", "0");
-                String fmax_bw_g_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEgh", "12");
-                String fmax_bw_g_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEgm", "00");
-                txData[45] = (byte) Integer.parseInt(fmax_bw_g_f);
-                txData[46] = (byte) Integer.parseInt(fmax_bw_g_h);
-                txData[47] = (byte) Integer.parseInt(fmax_bw_g_m);
-                String fmax_bw_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEf3", "0");
-                String fmax_bw_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEgbh", "17");
-                String fmax_bw_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEgbm", "00");
-                txData[48] = (byte) Integer.parseInt(fmax_bw_gb_f);
-                txData[49] = (byte) Integer.parseInt(fmax_bw_gb_h);
-                txData[50] = (byte) Integer.parseInt(fmax_bw_gb_m);
-                String fmax_bw_a_f = "0";
-                String fmax_bw_a_h = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEah", "22");
-                String fmax_bw_a_m = localDataManager.getSharedPreference(getApplicationContext(), "WIDE SPECT SUNLIKE WHITEam", "00");
-                txData[51] = (byte) Integer.parseInt(fmax_bw_a_f);
-                txData[52] = (byte) Integer.parseInt(fmax_bw_a_h);
-                txData[53] = (byte) Integer.parseInt(fmax_bw_a_m);
-
-                txData[56] = 0x66;
-            } else if (model.equals("UV+")) {
-                txData[0] = 0x65;
-                txData[1] = 0x04;
-                txData[2] = 0x01;
-                String smax_db_gd_f = "0";
-                String smax_db_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kgdh", "07");
-                String smax_db_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kgdm", "00");
-                txData[3] = (byte) Integer.parseInt(smax_db_gd_f);
-                txData[4] = (byte) Integer.parseInt(smax_db_gd_h);
-                txData[5] = (byte) Integer.parseInt(smax_db_gd_m);
-                String smax_db_g_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kf2", "0");
-                String smax_db_g_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kgh", "12");
-                String smax_db_g_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kgm", "00");
-                txData[6] = (byte) Integer.parseInt(smax_db_g_f);
-                txData[7] = (byte) Integer.parseInt(smax_db_g_h);
-                txData[8] = (byte) Integer.parseInt(smax_db_g_m);
-                String smax_db_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kf3", "0");
-                String smax_db_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kgbh", "17");
-                String smax_db_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kgbm", "00");
-                txData[9] = (byte) Integer.parseInt(smax_db_gb_f);
-                txData[10] = (byte) Integer.parseInt(smax_db_gb_h);
-                txData[11] = (byte) Integer.parseInt(smax_db_gb_m);
-                String smax_db_a_f = "0";
-                String smax_db_a_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kah", "22");
-                String smax_db_a_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+5000Kam", "00");
-                txData[12] = (byte) Integer.parseInt(smax_db_a_f);
-                txData[13] = (byte) Integer.parseInt(smax_db_a_h);
-                txData[14] = (byte) Integer.parseInt(smax_db_a_m);
-                txData[15] = 0x02;
-                String smax_as_gd_f = "0";
-                String smax_as_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kgdh", "07");
-                String smax_as_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kgdm", "00");
-                txData[16] = (byte) Integer.parseInt(smax_as_gd_f);
-                txData[17] = (byte) Integer.parseInt(smax_as_gd_h);
-                txData[18] = (byte) Integer.parseInt(smax_as_gd_m);
-                String smax_as_g_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kf2", "0");
-                String smax_as_g_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kgh", "12");
-                String smax_as_g_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kgm", "00");
-                txData[19] = (byte) Integer.parseInt(smax_as_g_f);
-                txData[20] = (byte) Integer.parseInt(smax_as_g_h);
-                txData[21] = (byte) Integer.parseInt(smax_as_g_m);
-                String smax_as_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kf3", "0");
-                String smax_as_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kgbh", "17");
-                String smax_as_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kgbm", "00");
-                txData[22] = (byte) Integer.parseInt(smax_as_gb_f);
-                txData[23] = (byte) Integer.parseInt(smax_as_gb_h);
-                txData[24] = (byte) Integer.parseInt(smax_as_gb_m);
-                String smax_as_a_f = "0";
-                String smax_as_a_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kah", "22");
-                String smax_as_a_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+6500Kam", "00");
-                txData[25] = (byte) Integer.parseInt(smax_as_a_f);
-                txData[26] = (byte) Integer.parseInt(smax_as_a_h);
-                txData[27] = (byte) Integer.parseInt(smax_as_a_m);
-                txData[28] = 0x03;
-                String smax_m_gd_f = "0";
-                String smax_m_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kgdh", "07");
-                String smax_m_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kgdm", "00");
-                txData[29] = (byte) Integer.parseInt(smax_m_gd_f);
-                txData[30] = (byte) Integer.parseInt(smax_m_gd_h);
-                txData[31] = (byte) Integer.parseInt(smax_m_gd_m);
-                String smax_m_g_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kf2", "0");
-                String smax_m_g_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kgh", "12");
-                String smax_m_g_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kgm", "00");
-                txData[32] = (byte) Integer.parseInt(smax_m_g_f);
-                txData[33] = (byte) Integer.parseInt(smax_m_g_h);
-                txData[34] = (byte) Integer.parseInt(smax_m_g_m);
-                String smax_m_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kf3", "0");
-                String smax_m_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kgbh", "17");
-                String smax_m_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kgbm", "00");
-                txData[35] = (byte) Integer.parseInt(smax_m_gb_f);
-                txData[36] = (byte) Integer.parseInt(smax_m_gb_h);
-                txData[37] = (byte) Integer.parseInt(smax_m_gb_m);
-                String smax_m_a_f = "0";
-                String smax_m_a_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kah", "22");
-                String smax_m_a_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+9000Kam", "00");
-                txData[38] = (byte) Integer.parseInt(smax_m_a_f);
-                txData[39] = (byte) Integer.parseInt(smax_m_a_h);
-                txData[40] = (byte) Integer.parseInt(smax_m_a_m);
-                txData[41] = 0x04;
-                String smax_sb_gd_f = "0";
-                String smax_sb_gd_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSgdh", "07");
-                String smax_sb_gd_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSgdm", "00");
-                txData[42] = (byte) Integer.parseInt(smax_sb_gd_f);
-                txData[43] = (byte) Integer.parseInt(smax_sb_gd_h);
-                txData[44] = (byte) Integer.parseInt(smax_sb_gd_m);
-                String smax_sb_g_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSf2", "0");
-                String smax_sb_g_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSgh", "12");
-                String smax_sb_g_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSgm", "00");
-                txData[45] = (byte) Integer.parseInt(smax_sb_g_f);
-                txData[46] = (byte) Integer.parseInt(smax_sb_g_h);
-                txData[47] = (byte) Integer.parseInt(smax_sb_g_m);
-                String smax_sb_gb_f = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSf3", "0");
-                String smax_sb_gb_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSgbh", "17");
-                String smax_sb_gb_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSgbm", "00");
-                txData[48] = (byte) Integer.parseInt(smax_sb_gb_f);
-                txData[49] = (byte) Integer.parseInt(smax_sb_gb_h);
-                txData[50] = (byte) Integer.parseInt(smax_sb_gb_m);
-                String smax_sb_a_f = "0";
-                String smax_sb_a_h = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSah", "22");
-                String smax_sb_a_m = localDataManager.getSharedPreference(getApplicationContext(), "UV+UV PLUSam", "00");
-                txData[51] = (byte) Integer.parseInt(smax_sb_a_f);
-                txData[52] = (byte) Integer.parseInt(smax_sb_a_h);
-                txData[53] = (byte) Integer.parseInt(smax_sb_a_m);
-                txData[56] = 0x66;
-
-            } else {
-                //custom /////////////////////////////////////////////
-
-                txData[0] = 0x65; //101
-                txData[1] = 0x01; //1
-
-                txData[2] = 0x01; //1. kanal
-                String ch1brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f1", "0");
-                String ch1brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f2", "0");
-                String ch1brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f3", "0");
-                String ch1brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f4", "0");
-
-                String mgdh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gdh", "7");
-                String mgdm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gdm", "0");
-                String mgh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gh", "12");
-                String mgm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gm", "0");
-                String mgbh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gbh", "17");
-                String mgbm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gbm", "0");
-                String mah1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "ah", "22");
-                String mam1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "am", "0");
-
-                txData[3] = (byte) Integer.parseInt(ch1brightness1);
-                txData[4] = (byte) Integer.parseInt(mgdh1);
-                txData[5] = (byte) Integer.parseInt(mgdm1);
-
-
-                txData[6] = (byte) Integer.parseInt(ch1brightness2);
-                txData[7] = (byte) Integer.parseInt(mgh1);
-                txData[8] = (byte) Integer.parseInt(mgm1);
-
-
-                txData[9] = (byte) Integer.parseInt(ch1brightness3);
-                txData[10] = (byte) Integer.parseInt(mgbh1);
-                txData[11] = (byte) Integer.parseInt(mgbm1);
-
-
-                txData[12] = (byte) Integer.parseInt(ch1brightness4);
-                txData[13] = (byte) Integer.parseInt(mah1);
-                txData[14] = (byte) Integer.parseInt(mam1);
-
-                txData[15] = 0x02; //2. kanal
-                String ch2brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f1", "0");
-                String ch2brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f2", "0");
-                String ch2brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f3", "0");
-                String ch2brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f4", "0");
-
-                String mgdh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gdh", "7");
-                String mgdm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gdm", "0");
-                String mgh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gh", "12");
-                String mgm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gm", "0");
-                String mgbh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gbh", "17");
-                String mgbm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gbm", "0");
-                String mah2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "ah", "22");
-                String mam2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "am", "0");
-
-                txData[16] = (byte) Integer.parseInt(ch2brightness1);
-                txData[17] = (byte) Integer.parseInt(mgdh2);
-                txData[18] = (byte) Integer.parseInt(mgdm2);
-
-
-                txData[19] = (byte) Integer.parseInt(ch2brightness2);
-                txData[20] = (byte) Integer.parseInt(mgh2);
-                txData[21] = (byte) Integer.parseInt(mgm2);
-
-
-                txData[22] = (byte) Integer.parseInt(ch2brightness3);
-                txData[23] = (byte) Integer.parseInt(mgbh2);
-                txData[24] = (byte) Integer.parseInt(mgbm2);
-
-
-                txData[25] = (byte) Integer.parseInt(ch2brightness4);
-                txData[26] = (byte) Integer.parseInt(mah2);
-                txData[27] = (byte) Integer.parseInt(mam2);
-
-
-                txData[28] = 0x03; //3. kanal
-                String ch3brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f1", "0");
-                String ch3brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f2", "0");
-                String ch3brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f3", "0");
-                String ch3brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f4", "0");
-
-
-                String mgdh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gdh", "7");
-                String mgdm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gdm", "0");
-                String mgh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gh", "12");
-                String mgm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gm", "0");
-                String mgbh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gbh", "17");
-                String mgbm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gbm", "0");
-                String mah3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "ah", "22");
-                String mam3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "am", "0");
-
-
-                txData[29] = (byte) Integer.parseInt(ch3brightness1);
-                txData[30] = (byte) Integer.parseInt(mgdh3);
-                txData[31] = (byte) Integer.parseInt(mgdm3);
-
-                txData[32] = (byte) Integer.parseInt(ch3brightness2);
-                txData[33] = (byte) Integer.parseInt(mgh3);
-                txData[34] = (byte) Integer.parseInt(mgm3);
-
-                txData[35] = (byte) Integer.parseInt(ch3brightness3);
-                txData[36] = (byte) Integer.parseInt(mgbh3);
-                txData[37] = (byte) Integer.parseInt(mgbm3);
-
-                txData[38] = (byte) Integer.parseInt(ch3brightness4);
-                txData[39] = (byte) Integer.parseInt(mah3);
-                txData[40] = (byte) Integer.parseInt(mam3);
-
-
-                txData[41] = 0x04; //4. kanal
-                String ch4brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f1", "0");
-                String ch4brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f2", "0");
-                String ch4brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f3", "0");
-                String ch4brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f4", "0");
-
-
-                String mgdh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gdh", "7");
-                String mgdm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gdm", "0");
-                String mgh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gh", "12");
-                String mgm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gm", "0");
-                String mgbh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gbh", "17");
-                String mgbm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gbm", "0");
-                String mah4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "ah", "22");
-                String mam4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "am", "0");
-
-
-                txData[42] = (byte) Integer.parseInt(ch4brightness1);
-                txData[43] = (byte) Integer.parseInt(mgdh4);
-                txData[44] = (byte) Integer.parseInt(mgdm4);
-
-
-                txData[45] = (byte) Integer.parseInt(ch4brightness2);
-                txData[46] = (byte) Integer.parseInt(mgh4);
-                txData[47] = (byte) Integer.parseInt(mgm4);
-
-
-                txData[48] = (byte) Integer.parseInt(ch4brightness3);
-                txData[49] = (byte) Integer.parseInt(mgbh4);
-                txData[50] = (byte) Integer.parseInt(mgbm4);
-
-
-                txData[51] = (byte) Integer.parseInt(ch4brightness4);
-                txData[52] = (byte) Integer.parseInt(mah4);
-                txData[53] = (byte) Integer.parseInt(mam4);
-
-
-                txData[54] = 0x05; //5. kanal
-
-                String ch5brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f1", "0");
-                String ch5brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f2", "0");
-                String ch5brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f3", "0");
-                String ch5brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f4", "0");
-
-                String mgdh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gdh", "7");
-                String mgdm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gdm", "0");
-                String mgh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gh", "12");
-                String mgm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gm", "0");
-                String mgbh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gbh", "17");
-                String mgbm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gbm", "0");
-                String mah5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "ah", "22");
-                String mam5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "am", "0");
-
-
-                txData[55] = (byte) Integer.parseInt(ch5brightness1);
-                txData[56] = (byte) Integer.parseInt(mgdh5);
-                txData[57] = (byte) Integer.parseInt(mgdm5);
-
-
-                txData[58] = (byte) Integer.parseInt(ch5brightness2);
-                txData[59] = (byte) Integer.parseInt(mgh5);
-                txData[60] = (byte) Integer.parseInt(mgm5);
-
-
-                txData[61] = (byte) Integer.parseInt(ch5brightness3);
-                txData[62] = (byte) Integer.parseInt(mgbh5);
-                txData[63] = (byte) Integer.parseInt(mgbm5);
-
-
-                txData[64] = (byte) Integer.parseInt(ch5brightness4);
-                txData[65] = (byte) Integer.parseInt(mah5);
-                txData[66] = (byte) Integer.parseInt(mam5);
-
-                txData[67] = 0x06; //6. kanal
-                String ch6brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f1", "0");
-                String ch6brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f2", "0");
-                String ch6brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f3", "0");
-                String ch6brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f4", "0");
-
-
-                String mgdh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gdh", "7");
-                String mgdm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gdm", "0");
-                String mgh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gh", "12");
-                String mgm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gm", "0");
-                String mgbh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gbh", "17");
-                String mgbm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gbm", "0");
-                String mah6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "ah", "22");
-                String mam6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "am", "0");
-
-
-                txData[68] = (byte) Integer.parseInt(ch6brightness1);
-                txData[69] = (byte) Integer.parseInt(mgdh6);
-                txData[70] = (byte) Integer.parseInt(mgdm6);
-
-
-                txData[71] = (byte) Integer.parseInt(ch6brightness2);
-                txData[72] = (byte) Integer.parseInt(mgh6);
-                txData[73] = (byte) Integer.parseInt(mgm6);
-
-
-                txData[74] = (byte) Integer.parseInt(ch6brightness3);
-                txData[75] = (byte) Integer.parseInt(mgbh6);
-                txData[76] = (byte) Integer.parseInt(mgbm6);
-
-                txData[77] = (byte) Integer.parseInt(ch6brightness4);
-                txData[78] = (byte) Integer.parseInt(mah6);
-                txData[79] = (byte) Integer.parseInt(mam6);
+        }
+        else {
+            //custom /////////////////////////////////////////////
+
+            txData[0] = 0x65; //101
+            txData[1] = 0x01; //1
+
+            txData[2] = 0x01; //1. kanal
+            String ch1brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f1", "0");
+            String ch1brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f2", "0");
+            String ch1brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f3", "0");
+            String ch1brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f4", "0");
+
+            String mgdh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gdh", "7");
+            String mgdm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gdm", "0");
+            String mgh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gh", "12");
+            String mgm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gm", "0");
+            String mgbh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gbh", "17");
+            String mgbm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gbm", "0");
+            String mah1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "ah", "22");
+            String mam1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "am", "0");
+
+            txData[3] = (byte) Integer.parseInt(ch1brightness1);
+            txData[4] = (byte) Integer.parseInt(mgdh1);
+            txData[5] = (byte) Integer.parseInt(mgdm1);
+
+
+            txData[6] = (byte) Integer.parseInt(ch1brightness2);
+            txData[7] = (byte) Integer.parseInt(mgh1);
+            txData[8] = (byte) Integer.parseInt(mgm1);
+
+
+            txData[9] = (byte) Integer.parseInt(ch1brightness3);
+            txData[10] = (byte) Integer.parseInt(mgbh1);
+            txData[11] = (byte) Integer.parseInt(mgbm1);
+
+
+            txData[12] = (byte) Integer.parseInt(ch1brightness4);
+            txData[13] = (byte) Integer.parseInt(mah1);
+            txData[14] = (byte) Integer.parseInt(mam1);
+
+            txData[15] = 0x02; //2. kanal
+            String ch2brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f1", "0");
+            String ch2brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f2", "0");
+            String ch2brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f3", "0");
+            String ch2brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f4", "0");
+
+            String mgdh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gdh", "7");
+            String mgdm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gdm", "0");
+            String mgh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gh", "12");
+            String mgm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gm", "0");
+            String mgbh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gbh", "17");
+            String mgbm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gbm", "0");
+            String mah2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "ah", "22");
+            String mam2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "am", "0");
+
+            txData[16] = (byte) Integer.parseInt(ch2brightness1);
+            txData[17] = (byte) Integer.parseInt(mgdh2);
+            txData[18] = (byte) Integer.parseInt(mgdm2);
+
+
+            txData[19] = (byte) Integer.parseInt(ch2brightness2);
+            txData[20] = (byte) Integer.parseInt(mgh2);
+            txData[21] = (byte) Integer.parseInt(mgm2);
+
+
+            txData[22] = (byte) Integer.parseInt(ch2brightness3);
+            txData[23] = (byte) Integer.parseInt(mgbh2);
+            txData[24] = (byte) Integer.parseInt(mgbm2);
+
+
+            txData[25] = (byte) Integer.parseInt(ch2brightness4);
+            txData[26] = (byte) Integer.parseInt(mah2);
+            txData[27] = (byte) Integer.parseInt(mam2);
+
+
+            txData[28] = 0x03; //3. kanal
+            String ch3brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f1", "0");
+            String ch3brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f2", "0");
+            String ch3brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f3", "0");
+            String ch3brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f4", "0");
+
+
+            String mgdh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gdh", "7");
+            String mgdm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gdm", "0");
+            String mgh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gh", "12");
+            String mgm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gm", "0");
+            String mgbh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gbh", "17");
+            String mgbm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gbm", "0");
+            String mah3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "ah", "22");
+            String mam3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "am", "0");
+
+
+            txData[29] = (byte) Integer.parseInt(ch3brightness1);
+            txData[30] = (byte) Integer.parseInt(mgdh3);
+            txData[31] = (byte) Integer.parseInt(mgdm3);
+
+            txData[32] = (byte) Integer.parseInt(ch3brightness2);
+            txData[33] = (byte) Integer.parseInt(mgh3);
+            txData[34] = (byte) Integer.parseInt(mgm3);
+
+            txData[35] = (byte) Integer.parseInt(ch3brightness3);
+            txData[36] = (byte) Integer.parseInt(mgbh3);
+            txData[37] = (byte) Integer.parseInt(mgbm3);
+
+            txData[38] = (byte) Integer.parseInt(ch3brightness4);
+            txData[39] = (byte) Integer.parseInt(mah3);
+            txData[40] = (byte) Integer.parseInt(mam3);
+
+
+            txData[41] = 0x04; //4. kanal
+            String ch4brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f1", "0");
+            String ch4brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f2", "0");
+            String ch4brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f3", "0");
+            String ch4brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f4", "0");
+
+
+            String mgdh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gdh", "7");
+            String mgdm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gdm", "0");
+            String mgh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gh", "12");
+            String mgm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gm", "0");
+            String mgbh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gbh", "17");
+            String mgbm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gbm", "0");
+            String mah4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "ah", "22");
+            String mam4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "am", "0");
+
+
+            txData[42] = (byte) Integer.parseInt(ch4brightness1);
+            txData[43] = (byte) Integer.parseInt(mgdh4);
+            txData[44] = (byte) Integer.parseInt(mgdm4);
+
+
+            txData[45] = (byte) Integer.parseInt(ch4brightness2);
+            txData[46] = (byte) Integer.parseInt(mgh4);
+            txData[47] = (byte) Integer.parseInt(mgm4);
+
+
+            txData[48] = (byte) Integer.parseInt(ch4brightness3);
+            txData[49] = (byte) Integer.parseInt(mgbh4);
+            txData[50] = (byte) Integer.parseInt(mgbm4);
+
+
+            txData[51] = (byte) Integer.parseInt(ch4brightness4);
+            txData[52] = (byte) Integer.parseInt(mah4);
+            txData[53] = (byte) Integer.parseInt(mam4);
+
+
+            txData[54] = 0x05; //5. kanal
+
+            String ch5brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f1", "0");
+            String ch5brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f2", "0");
+            String ch5brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f3", "0");
+            String ch5brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f4", "0");
+
+            String mgdh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gdh", "7");
+            String mgdm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gdm", "0");
+            String mgh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gh", "12");
+            String mgm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gm", "0");
+            String mgbh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gbh", "17");
+            String mgbm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gbm", "0");
+            String mah5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "ah", "22");
+            String mam5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "am", "0");
+
+
+            txData[55] = (byte) Integer.parseInt(ch5brightness1);
+            txData[56] = (byte) Integer.parseInt(mgdh5);
+            txData[57] = (byte) Integer.parseInt(mgdm5);
+
+
+            txData[58] = (byte) Integer.parseInt(ch5brightness2);
+            txData[59] = (byte) Integer.parseInt(mgh5);
+            txData[60] = (byte) Integer.parseInt(mgm5);
+
+
+            txData[61] = (byte) Integer.parseInt(ch5brightness3);
+            txData[62] = (byte) Integer.parseInt(mgbh5);
+            txData[63] = (byte) Integer.parseInt(mgbm5);
+
+
+            txData[64] = (byte) Integer.parseInt(ch5brightness4);
+            txData[65] = (byte) Integer.parseInt(mah5);
+            txData[66] = (byte) Integer.parseInt(mam5);
+
+            txData[67] = 0x06; //6. kanal
+            String ch6brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f1", "0");
+            String ch6brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f2", "0");
+            String ch6brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f3", "0");
+            String ch6brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f4", "0");
+
+
+            String mgdh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gdh", "7");
+            String mgdm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gdm", "0");
+            String mgh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gh", "12");
+            String mgm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gm", "0");
+            String mgbh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gbh", "17");
+            String mgbm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gbm", "0");
+            String mah6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "ah", "22");
+            String mam6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "am", "0");
+
+
+            txData[68] = (byte) Integer.parseInt(ch6brightness1);
+            txData[69] = (byte) Integer.parseInt(mgdh6);
+            txData[70] = (byte) Integer.parseInt(mgdm6);
+
+
+            txData[71] = (byte) Integer.parseInt(ch6brightness2);
+            txData[72] = (byte) Integer.parseInt(mgh6);
+            txData[73] = (byte) Integer.parseInt(mgm6);
+
+
+            txData[74] = (byte) Integer.parseInt(ch6brightness3);
+            txData[75] = (byte) Integer.parseInt(mgbh6);
+            txData[76] = (byte) Integer.parseInt(mgbm6);
+
+            txData[77] = (byte) Integer.parseInt(ch6brightness4);
+            txData[78] = (byte) Integer.parseInt(mah6);
+            txData[79] = (byte) Integer.parseInt(mam6);
 
                  /*
                 txData[80] = 0x07; //7. kanal
@@ -1153,10 +722,9 @@ public class MainActivity extends AppCompatActivity {
 
                  */
 
-                txData[80] = Byte.parseByte(hour);
-                txData[81] = Byte.parseByte(minute);
-                txData[82] = 0x66; //stop
-            }
+            txData[80] = Byte.parseByte(hour);
+            txData[81] = Byte.parseByte(minute);
+            txData[82] = 0x66; //stop
         }
 
         // Datalar gönderiliyor
@@ -1167,6 +735,8 @@ public class MainActivity extends AppCompatActivity {
             isTxFull = true;
             sendReceive.write(txData);
             sendList.remove(device.getAddress());
+            if (!test_model.equals("test"))
+                i++;
             Log.e(TAG, "Veriler gönderildi.");
             Message message = Message.obtain();
             message.what = STATE_MESSAGE_ACK_WAIT;
@@ -1237,23 +807,23 @@ public class MainActivity extends AppCompatActivity {
                 sendReceive = new SendReceive(socket);
                 sendReceive.start();
                 Message message = Message.obtain();
-                message.what=STATE_CONNECTED;
+                message.what = STATE_CONNECTED;
                 handler.sendMessage(message);
 
             } catch (IOException e) {
                 e.printStackTrace();
 
                 Message message = Message.obtain();
-                message.what=STATE_CONNECTION_FAILED;
+                message.what = STATE_CONNECTION_FAILED;
                 handler.sendMessage(message);
             }
         }
     }
 
-    private class SendReceive extends Thread{
+    private class SendReceive extends Thread {
         private final BluetoothSocket bluetoothSocket;
 
-        public SendReceive(BluetoothSocket socket){
+        public SendReceive(BluetoothSocket socket) {
             bluetoothSocket = socket;
             InputStream tempIn = null;
             OutputStream tempOut = null;
@@ -1270,14 +840,14 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        public void run(){
+        public void run() {
             byte[] buffer = new byte[1024];
             int bytes;
 
-            while (true){
+            while (true) {
                 try {
-                        bytes =  inputStream.read(buffer);
-                        handler.obtainMessage(STATE_MESSAGE_RECEIVED,bytes,-1,buffer).sendToTarget();
+                    bytes = inputStream.read(buffer);
+                    handler.obtainMessage(STATE_MESSAGE_RECEIVED, bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
@@ -1285,7 +855,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        public void write(byte[] bytes){
+        public void write(byte[] bytes) {
             try {
                 outputStream.write(bytes);
             } catch (IOException e) {
@@ -1295,8 +865,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void closeBluetooth(){
-        if (inputStream != null){
+    private void closeBluetooth() {
+        if (inputStream != null) {
             try {
                 inputStream.close();
             } catch (IOException e) {
@@ -1304,7 +874,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (outputStream != null){
+        if (outputStream != null) {
             try {
                 outputStream.close();
             } catch (IOException e) {
@@ -1312,7 +882,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (socket != null){
+        if (socket != null) {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -1322,20 +892,20 @@ public class MainActivity extends AppCompatActivity {
 
         tv_status.setText("Connection closing...");
         tv_status.setTextColor(Color.CYAN);
-        Log.e(TAG,"Bluetooth soket kapatıldı");
+        Log.e(TAG, "Bluetooth soket kapatıldı");
     }
 
-    private String getMessage(Message msg){
+    private String getMessage(Message msg) {
         byte[] readBuffer = (byte[]) msg.obj;
-        return new String(readBuffer,0,msg.arg1);
+        return new String(readBuffer, 0, msg.arg1);
     }
 
-    private void getDateTime(){
+    private void getDateTime() {
         // getDateTime: 10-05
         SimpleDateFormat sdf = new SimpleDateFormat("HH-mm");
         String currentTime = sdf.format(new Date());
-        hour = currentTime.substring(0,2);
-        minute = currentTime.substring(3,5);
-        Log.e(TAG, "getDateTime: hour : "+hour+" minute : "+minute);
+        hour = currentTime.substring(0, 2);
+        minute = currentTime.substring(3, 5);
+        Log.e(TAG, "getDateTime: hour : " + hour + " minute : " + minute);
     }
 }
