@@ -52,13 +52,14 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_bottom"
+        android:theme="@style/Theme.AppCompat"
         android:layout_width="wrap_content"
         android:onClick="fab_bottom"
         android:layout_height="wrap_content"
         app:tint="@android:color/white"
-        app:backgroundTint="@color/black"
+        app:backgroundTint="@color/red"
         app:srcCompat="@drawable/icon"
-        app:layout_anchor="@id/bottom_appbar" />
+        app:layout_anchor="@id/bottom_appbar"/>
 
 
 
