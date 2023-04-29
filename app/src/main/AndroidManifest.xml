@@ -1,32 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.mythleds.ikigai">
 
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+
+    <!-- Request legacy Bluetooth permissions on older devices. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <!-- Needed only if your app looks for Bluetooth devices. -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
 
+    <!-- Needed only if your app looks for Bluetooth devices.
+      If your app doesn't use Bluetooth scan results to derive physical
+      location information, you can strongly assert that your app
+      doesn't derive physical location. -->
+    <!--    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />-->
+    <!-- Include "neverForLocation" only if you can strongly assert that
+             your app never derives physical location from Bluetooth scan results. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+
+    <!-- Needed only if your app makes the device discoverable to Bluetooth
+         devices. -->
+    <!--    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />-->
+
+    <!-- Needed only if your app communicates with already-paired Bluetooth
+         devices. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Needed only if your app uses Bluetooth scan results to derive physical location. -->
+    <!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
+
+    <!-- Not needed if you can strongly assert that your app never derives
+         physical location from Bluetooth scan results and doesn't need location
+         access for any other purpose. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 
     <application
-        android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents">
         <activity android:name="com.mythleds.ikigai.MainActivity" />
         <activity android:name="com.mythleds.ikigai.BluetoothScanActivity" />
-        <activity android:name="com.mythleds.ikigai.SplashScreenActivity"
+        <activity
+            android:name="com.mythleds.ikigai.SplashScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

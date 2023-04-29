@@ -1,9 +1,13 @@
 package com.mythleds.ikigai;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
@@ -90,22 +94,13 @@ public class MainActivity extends AppCompatActivity {
     ProgressDialog progress;
 
     LocalDataManager localDataManager = new LocalDataManager();
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        init();
 
-        if (Build.VERSION.SDK_INT >= 30) {
-            if (!Environment.isExternalStorageManager()) {
-                Intent getpermission = new Intent();
-                getpermission.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                startActivity(getpermission);
-            }
-        }
+        init();
 
         localDataManager.setSharedPreference(getApplicationContext(), "test_model", "false");
 
@@ -137,7 +132,9 @@ public class MainActivity extends AppCompatActivity {
                         if (socket.isConnected()) {
                             closeBluetooth();
                         }
-                        startActivity(new Intent(MainActivity.this, BluetoothScanActivity.class));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            startActivity(new Intent(MainActivity.this, BluetoothScanActivity.class));
+                        }
                         finish();
                         break;
                     case R.id.action_test:
@@ -159,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
     }
 
     @Override
@@ -178,7 +174,9 @@ public class MainActivity extends AppCompatActivity {
         bluetoothAdapter.disable();
     }
 
+
     public void init() {
+
 
         tv_status = findViewById(R.id.tv_status);
         bottomNavigationView = findViewById(R.id.bottom_nav);
@@ -278,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
                         tv_status.setText("Connecting...");
                         tv_status.setTextColor(getResources().getColor(R.color.accent));
                         progress =
-                                ProgressDialog.show(MainActivity.this, "Connecting to other leds..", "PLease Wait");
+                                ProgressDialog.show(MainActivity.this, "Connecting to other leds..", "Please Wait");
                         // Bluetooth bağlantısını kes.
                         if (socket.isConnected()) {
                             closeBluetooth();
@@ -369,7 +367,9 @@ public class MainActivity extends AppCompatActivity {
 
         fab_bottom.setEnabled(false);
         if (!socket.isConnected()) {
-            startActivity(new Intent(MainActivity.this, BluetoothScanActivity.class));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                startActivity(new Intent(MainActivity.this, BluetoothScanActivity.class));
+            }
             finish();
         }
 
@@ -380,9 +380,9 @@ public class MainActivity extends AppCompatActivity {
         txData[54] = Byte.parseByte(hour);
         txData[55] = Byte.parseByte(minute);
         if (test_model.equals("test")) {
-            txData[0] = 0x65;
             String longManuel = localDataManager.getSharedPreference(getApplicationContext(), "longManuel", "false");
 
+            txData[0] = 0x65;
             txData[1] = 0x06;
             txData[2] = 0xA;
 
@@ -399,7 +399,6 @@ public class MainActivity extends AppCompatActivity {
             txData[4] = (byte) Integer.parseInt(test_f2);
             txData[5] = (byte) Integer.parseInt(test_f3);
             txData[6] = (byte) Integer.parseInt(test_f4);
-
             txData[7] = (byte) Integer.parseInt(test_f5);
             txData[8] = (byte) Integer.parseInt(test_f6);
             //txData_Test[9] = (byte) Integer.parseInt(test_f7);
@@ -410,14 +409,13 @@ public class MainActivity extends AppCompatActivity {
                 txData[i] = 0x00;
             }
             txData[82] = 0x66;
-        }
-        else {
+        } else {
             //custom /////////////////////////////////////////////
 
             txData[0] = 0x65; //101
             txData[1] = 0x01; //1
-
             txData[2] = 0x01; //1. kanal
+
             String ch1brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f1", "0");
             String ch1brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f2", "0");
             String ch1brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f3", "0");
