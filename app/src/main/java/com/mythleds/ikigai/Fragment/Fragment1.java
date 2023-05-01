@@ -66,11 +66,15 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
 
     private TextView tv_status;
     private SeekBar seekBar1, seekBar2, seekBar3, seekBar4;
+
+    private SeekBar sbTotalIntensity;
     private Spinner sp_channel;
     LineDataSet lDataSet1, lDataSet2, lDataSet3, lDataSet4, lDataSet5, lDataSet6, lDataSet7, lDataSet8;
     LineData chartData = new LineData();
     String selectedChannel;
     private TextView tv_seekBar1, tv_seekBar2, tv_seekBar3, tv_seekBar4, tv_sb1title, tv_sb2title, tv_sb3title, tv_sb4title;
+
+    private TextView tv_totalIntensityValueText;
     private Button btn_gd, btn_gb, btn_g, btn_a, savetmButton, loadtmpButton;
 
     final static int MODEL_DEFAULT = 0;
@@ -82,6 +86,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
     TextView weekdayz;
 
     int seekbar1, seekbar2, seekbar3, seekbar4;
+
+    int seekBarTotalIntesityValue;
     int gdh = 8, gdm = 0, gh = 12, gm = 0, gbh = 16, gbm = 0, ah = 20, am = 0;
 
     private LineChart mChart;
@@ -178,6 +184,24 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
                 seekbar4 = progress;
                 setSeekBar(4, progress);
                 localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f4", "" + progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        sbTotalIntensity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                seekBarTotalIntesityValue = progress;
+                setSeekBar(5, progress);
+                localDataManager.setSharedPreference(getContext(), model + selectedChannel + "total", "" + progress);
             }
 
             @Override
@@ -294,6 +318,7 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
         seekBar2 = view.findViewById(R.id.seekBar2);
         seekBar3 = view.findViewById(R.id.seekBar3);
         seekBar4 = view.findViewById(R.id.seekBar4);
+        sbTotalIntensity = view.findViewById(R.id.seekBartotalIntensity);
         mChart = view.findViewById(R.id.linechart);
         // weekdayz = view.findViewById(R.id.weekdayz);
         sp_channel = view.findViewById(R.id.sp_channels);
@@ -302,6 +327,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
         tv_seekBar2 = view.findViewById(R.id.tv_seekBar2);
         tv_seekBar3 = view.findViewById(R.id.tv_seekBar3);
         tv_seekBar4 = view.findViewById(R.id.tv_seekBar4);
+        tv_totalIntensityValueText = view.findViewById(R.id.tv_TotalIntensityValue);
+
         tv_sb1title = view.findViewById(R.id.tv_testsb1title);
         tv_sb2title = view.findViewById(R.id.tv_sb2title);
         tv_sb3title = view.findViewById(R.id.tv_sb3title);
@@ -587,32 +614,33 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
         String val3 = localDataManager.getSharedPreference(getContext(), model + selectedChannel + "f3", "");
         String val4 = localDataManager.getSharedPreference(getContext(), model + selectedChannel + "f4", "");
 
-        retrieveMemorizedDatas();
-
         if (model.equals("RGBW") || model.equals("SPECTRUM+")) {
             seekBar1.setEnabled(false);
             seekBar4.setEnabled(false);
             seekBar1.setProgress(0);
             seekBar4.setProgress(0);
-        } else if (!val.isEmpty()) {
-            seekBar1.setProgress(Integer.parseInt(val));
-        } else {
-            seekBar1.setProgress(0);
         }
-        if (!val2.isEmpty()) {
-            seekBar2.setProgress(Integer.parseInt(val2));
-        } else {
-            seekBar2.setProgress(0);
-        }
-        if (!val3.isEmpty()) {
-            seekBar3.setProgress(Integer.parseInt(val3));
-        } else {
-            seekBar3.setProgress(0);
-        }
-        if (!val4.isEmpty()) {
-            seekBar4.setProgress(Integer.parseInt(val4));
-        } else {
-            seekBar4.setProgress(0);
+        else {
+            if (!val.isEmpty()) {
+                seekBar1.setProgress(Integer.parseInt(val));
+            } else {
+                seekBar1.setProgress(0);
+            }
+            if (!val2.isEmpty()) {
+                seekBar2.setProgress(Integer.parseInt(val2));
+            } else {
+                seekBar2.setProgress(0);
+            }
+            if (!val3.isEmpty()) {
+                seekBar3.setProgress(Integer.parseInt(val3));
+            } else {
+                seekBar3.setProgress(0);
+            }
+            if (!val4.isEmpty()) {
+                seekBar4.setProgress(Integer.parseInt(val4));
+            } else {
+                seekBar4.setProgress(0);
+            }
         }
 
         if (model.equals("manual")) {
@@ -639,7 +667,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             } else if (selectedChannel.equals("Channel 6")) {
                 setDatasetSettings(6, "MAGENTA +");
             }
-        } else if (model.equals("RGBW")) {
+        }
+        else if (model.equals("RGBW")) {
             seekBar1.setEnabled(false);
             seekBar4.setEnabled(false);
             lDataSet1.setLabel("RED");
@@ -655,7 +684,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             } else if (selectedChannel.equals("WHITE")) {
                 setDatasetSettings(4, "WHITE");
             }
-        } else if (model.equals("SPECTRUM+")) {
+        }
+        else if (model.equals("SPECTRUM+")) {
             seekBar1.setEnabled(false);
             seekBar4.setEnabled(false);
             lDataSet1.setLabel("5000K");
@@ -671,7 +701,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             } else if (selectedChannel.equals("MAGENTA")) {
                 setDatasetSettings(4, "MAGENTA");
             }
-        } else if (model.equals("WIDE SPECT")) {
+        }
+        else if (model.equals("WIDE SPECT")) {
             seekBar1.setEnabled(false);
             seekBar4.setEnabled(false);
             lDataSet1.setLabel("REDDISH WHITE");
@@ -1216,6 +1247,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             case 4:
                 tv_seekBar4.setText("%" + progress);
 
+            case 5:
+                tv_totalIntensityValueText.setText("%" + progress);
             default:
                 break;
         }
@@ -1445,18 +1478,13 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             chartData.addDataSet(lDataSet6);
             lDataSet6.setColor(R.color.lighgray);
 
-
-
             mChart.setData(chartData);
             mChart.invalidate();
         }
-
-
-
-
     }
 
     private void saveState(String fileName) {
+
         FileOutputStream outStream = null;
         templates = new ArrayList<>();
         try {
@@ -1514,8 +1542,6 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
 
             objectOutStream.writeObject(templates);
             objectOutStream.close();
-
-
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
@@ -1535,9 +1561,11 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             loadedData = ((ArrayList<Template>) objectInStream.readObject());
             objectInStream.close();
 
-            int x=1;
+            int x = 1;
             for (Template data : loadedData) {
                 try {
+                    selectedChannel = data.Channel;
+
                     String cxf1 = data.sabahBrightness;
                     String cxf2 = data.ogleBrightness;
                     String cxf3 = data.aksamBrightness;
@@ -1552,28 +1580,28 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
                     localDataManager.setSharedPreference(getContext(), model + data.Channel + "gbh", data.aksamHour);
                     localDataManager.setSharedPreference(getContext(), model + data.Channel + "gbm", data.aksamMin);
 
-                    localDataManager.setSharedPreference(getContext(), model + data.Channel + "ah",data.geceHour);
+                    localDataManager.setSharedPreference(getContext(), model + data.Channel + "ah", data.geceHour);
                     localDataManager.setSharedPreference(getContext(), model + data.Channel + "am", data.geceMin);
 
-                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f1", "" + cxf1);
-                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f2", "" + cxf2);
-                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f3", "" + cxf3);
-                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f4", "" + cxf4);
+                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f1", cxf1);
+                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f2", cxf2);
+                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f3", cxf3);
+                    localDataManager.setSharedPreference(getContext(), model + selectedChannel + "f4", cxf4);
 
-                    seekbar1=Integer.parseInt(cxf1);
-                    seekbar2=Integer.parseInt(cxf2);
-                    seekbar3=Integer.parseInt(cxf3);
-                    seekbar4=Integer.parseInt(cxf4);
+                    seekbar1 = Integer.parseInt(cxf1);
+                    seekbar2 = Integer.parseInt(cxf2);
+                    seekbar3 = Integer.parseInt(cxf3);
+                    seekbar4 = Integer.parseInt(cxf4);
 
-                    selectedChannel=data.Channel;
+
 
                     setSeekBar(1, seekbar1);
                     setSeekBar(2, seekbar2);
                     setSeekBar(3, seekbar3);
                     setSeekBar(4, seekbar4);
 
-                    sp_channel.setSelection(x-1);
-                    onItemSelected(null,getView(),0,0);
+//                    sp_channel.setSelection(x - 1);
+                    onItemSelected(null, getView(), 0, 0);
 
 //                    btn_gd.setText("SUNRISE " + String.format("%02d", Integer.parseInt(data.sabahHour)) + ":" + String.format("%02d", Integer.parseInt(data.sabahMin)));
 //                    btn_g.setText("SUN " + String.format("%02d", Integer.parseInt(data.ogleHour)) + ":" + String.format("%02d", Integer.parseInt(data.ogleMin)));
@@ -1588,7 +1616,7 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
 
             retrieveMemorizedDatas();
             sp_channel.setSelection(0);
-            onItemSelected(null,getView(),0,0);
+            onItemSelected(null, getView(), 0, 0);
 
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
@@ -1602,6 +1630,7 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             e1.printStackTrace();
         }
     }
+
     private ArrayList<String> LoadTemplateList() {
         File directoryDefault = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "IkigaiTemplates");
 
