@@ -1562,7 +1562,6 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             loadedData = ((ArrayList<Template>) objectInStream.readObject());
             objectInStream.close();
 
-            int x = 1;
             for (Template data : loadedData) {
                 try {
                     selectedChannel = data.Channel;
@@ -1609,7 +1608,7 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
 //                    btn_gb.setText("SUNSET " + String.format("%02d", Integer.parseInt(data.aksamHour)) + ":" + String.format("%02d", Integer.parseInt(data.aksamMin)));
 //                    btn_a.setText("NIGHT " + String.format("%02d", Integer.parseInt(data.geceHour)) + ":" + String.format("%02d", Integer.parseInt(data.geceMin)));
 
-                    x++;
+
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage());
                 }
