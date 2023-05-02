@@ -1,15 +1,5 @@
 package com.mythleds.ikigai;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -20,10 +10,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,15 +20,17 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.mythleds.ikigai.R;
 import com.mythleds.ikigai.Class.LocalDataManager;
 import com.mythleds.ikigai.Fragment.Fragment1;
 import com.mythleds.ikigai.Fragment.Fragment2;
 import com.mythleds.ikigai.Fragment.Fragment3;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-
 import com.mythleds.ikigai.Fragment.Fragment4;
 
 import java.io.IOException;
@@ -94,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressDialog progress;
 
     LocalDataManager localDataManager = new LocalDataManager();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -379,6 +370,7 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "fab_bottom: minute" + minute);
         txData[54] = Byte.parseByte(hour);
         txData[55] = Byte.parseByte(minute);
+        //stop
         if (test_model.equals("test")) {
             String longManuel = localDataManager.getSharedPreference(getApplicationContext(), "longManuel", "false");
 
@@ -408,9 +400,13 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 9; i < 80; i++) {
                 txData[i] = 0x00;
             }
-            txData[82] = 0x66;
         } else {
             //custom /////////////////////////////////////////////
+
+            String totalIntensity = localDataManager.getSharedPreference(getApplicationContext(), model + "total", "100");
+            //total * kanal / 100
+            Integer total = Integer.parseInt(totalIntensity);
+
 
             txData[0] = 0x65; //101
             txData[1] = 0x01; //1
@@ -420,6 +416,9 @@ public class MainActivity extends AppCompatActivity {
             String ch1brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f2", "0");
             String ch1brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f3", "0");
             String ch1brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "f4", "0");
+
+            Integer newBright21 = (total * Integer.parseInt(ch1brightness2) / 100);
+            Integer newBright31 = (total * Integer.parseInt(ch1brightness3) / 100);
 
             String mgdh1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gdh", "7");
             String mgdm1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 1" + "gdm", "0");
@@ -433,18 +432,14 @@ public class MainActivity extends AppCompatActivity {
             txData[3] = (byte) Integer.parseInt(ch1brightness1);
             txData[4] = (byte) Integer.parseInt(mgdh1);
             txData[5] = (byte) Integer.parseInt(mgdm1);
+            txData[6] = (byte)  (newBright21 & 0xff);
 
-
-            txData[6] = (byte) Integer.parseInt(ch1brightness2);
             txData[7] = (byte) Integer.parseInt(mgh1);
             txData[8] = (byte) Integer.parseInt(mgm1);
+            txData[9] = (byte)  (newBright31 & 0xff);
 
-
-            txData[9] = (byte) Integer.parseInt(ch1brightness3);
             txData[10] = (byte) Integer.parseInt(mgbh1);
             txData[11] = (byte) Integer.parseInt(mgbm1);
-
-
             txData[12] = (byte) Integer.parseInt(ch1brightness4);
             txData[13] = (byte) Integer.parseInt(mah1);
             txData[14] = (byte) Integer.parseInt(mam1);
@@ -454,6 +449,9 @@ public class MainActivity extends AppCompatActivity {
             String ch2brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f2", "0");
             String ch2brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f3", "0");
             String ch2brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "f4", "0");
+
+            Integer newBright22 = (total * Integer.parseInt(ch2brightness2) / 100);
+            Integer newBright32 = (total * Integer.parseInt(ch2brightness3) / 100);
 
             String mgdh2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gdh", "7");
             String mgdm2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 2" + "gdm", "0");
@@ -468,16 +466,13 @@ public class MainActivity extends AppCompatActivity {
             txData[17] = (byte) Integer.parseInt(mgdh2);
             txData[18] = (byte) Integer.parseInt(mgdm2);
 
-
-            txData[19] = (byte) Integer.parseInt(ch2brightness2);
+            txData[19] = (byte) newBright22.byteValue();
             txData[20] = (byte) Integer.parseInt(mgh2);
             txData[21] = (byte) Integer.parseInt(mgm2);
 
-
-            txData[22] = (byte) Integer.parseInt(ch2brightness3);
+            txData[22] = (byte) newBright32.byteValue();
             txData[23] = (byte) Integer.parseInt(mgbh2);
             txData[24] = (byte) Integer.parseInt(mgbm2);
-
 
             txData[25] = (byte) Integer.parseInt(ch2brightness4);
             txData[26] = (byte) Integer.parseInt(mah2);
@@ -490,6 +485,8 @@ public class MainActivity extends AppCompatActivity {
             String ch3brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f3", "0");
             String ch3brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "f4", "0");
 
+            Integer newBright23 = (total * Integer.parseInt(ch3brightness2) / 100);
+            Integer newBright33 = (total * Integer.parseInt(ch3brightness4) / 100);
 
             String mgdh3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gdh", "7");
             String mgdm3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 3" + "gdm", "0");
@@ -505,11 +502,11 @@ public class MainActivity extends AppCompatActivity {
             txData[30] = (byte) Integer.parseInt(mgdh3);
             txData[31] = (byte) Integer.parseInt(mgdm3);
 
-            txData[32] = (byte) Integer.parseInt(ch3brightness2);
+            txData[32] = (byte) newBright23.byteValue();
             txData[33] = (byte) Integer.parseInt(mgh3);
             txData[34] = (byte) Integer.parseInt(mgm3);
 
-            txData[35] = (byte) Integer.parseInt(ch3brightness3);
+            txData[35] = (byte) newBright33.byteValue();
             txData[36] = (byte) Integer.parseInt(mgbh3);
             txData[37] = (byte) Integer.parseInt(mgbm3);
 
@@ -524,6 +521,9 @@ public class MainActivity extends AppCompatActivity {
             String ch4brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f3", "0");
             String ch4brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "f4", "0");
 
+
+            Integer newBright24 = (total * Integer.parseInt(ch4brightness2) / 100);
+            Integer newBright34 = (total * Integer.parseInt(ch4brightness4) / 100);
 
             String mgdh4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gdh", "7");
             String mgdm4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 4" + "gdm", "0");
@@ -540,12 +540,12 @@ public class MainActivity extends AppCompatActivity {
             txData[44] = (byte) Integer.parseInt(mgdm4);
 
 
-            txData[45] = (byte) Integer.parseInt(ch4brightness2);
+            txData[45] = (byte) newBright24.byteValue();
             txData[46] = (byte) Integer.parseInt(mgh4);
             txData[47] = (byte) Integer.parseInt(mgm4);
 
 
-            txData[48] = (byte) Integer.parseInt(ch4brightness3);
+            txData[48] = (byte) newBright34.byteValue();
             txData[49] = (byte) Integer.parseInt(mgbh4);
             txData[50] = (byte) Integer.parseInt(mgbm4);
 
@@ -562,6 +562,9 @@ public class MainActivity extends AppCompatActivity {
             String ch5brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f3", "0");
             String ch5brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "f4", "0");
 
+            Integer newBright25 = (total * Integer.parseInt(ch5brightness2) / 100);
+            Integer newBright35 = (total * Integer.parseInt(ch5brightness3) / 100);
+
             String mgdh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gdh", "7");
             String mgdm5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gdm", "0");
             String mgh5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "gh", "12");
@@ -571,21 +574,17 @@ public class MainActivity extends AppCompatActivity {
             String mah5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "ah", "22");
             String mam5 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 5" + "am", "0");
 
-
             txData[55] = (byte) Integer.parseInt(ch5brightness1);
             txData[56] = (byte) Integer.parseInt(mgdh5);
             txData[57] = (byte) Integer.parseInt(mgdm5);
 
-
-            txData[58] = (byte) Integer.parseInt(ch5brightness2);
+            txData[58] = (byte) newBright25.byteValue();
             txData[59] = (byte) Integer.parseInt(mgh5);
             txData[60] = (byte) Integer.parseInt(mgm5);
 
-
-            txData[61] = (byte) Integer.parseInt(ch5brightness3);
+            txData[61] = (byte) newBright35.byteValue();
             txData[62] = (byte) Integer.parseInt(mgbh5);
             txData[63] = (byte) Integer.parseInt(mgbm5);
-
 
             txData[64] = (byte) Integer.parseInt(ch5brightness4);
             txData[65] = (byte) Integer.parseInt(mah5);
@@ -597,6 +596,8 @@ public class MainActivity extends AppCompatActivity {
             String ch6brightness3 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f3", "0");
             String ch6brightness4 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "f4", "0");
 
+            Integer newBright26 = (total * Integer.parseInt(ch6brightness2) / 100);
+            Integer newBright36 = (total * Integer.parseInt(ch6brightness3) / 100);
 
             String mgdh6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gdh", "7");
             String mgdm6 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel 6" + "gdm", "0");
@@ -613,12 +614,12 @@ public class MainActivity extends AppCompatActivity {
             txData[70] = (byte) Integer.parseInt(mgdm6);
 
 
-            txData[71] = (byte) Integer.parseInt(ch6brightness2);
+            txData[71] = (byte) newBright26.byteValue();
             txData[72] = (byte) Integer.parseInt(mgh6);
             txData[73] = (byte) Integer.parseInt(mgm6);
 
 
-            txData[74] = (byte) Integer.parseInt(ch6brightness3);
+            txData[74] = (byte) newBright36.byteValue();
             txData[75] = (byte) Integer.parseInt(mgbh6);
             txData[76] = (byte) Integer.parseInt(mgbm6);
 
@@ -695,8 +696,8 @@ public class MainActivity extends AppCompatActivity {
 
             txData[80] = Byte.parseByte(hour);
             txData[81] = Byte.parseByte(minute);
-            txData[82] = 0x66; //stop
         }
+        txData[82] = 0x66;
 
         // Datalar gönderiliyor
         for (int i = 0; i < txData.length; i++) {

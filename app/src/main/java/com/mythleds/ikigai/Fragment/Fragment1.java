@@ -201,7 +201,8 @@ public class Fragment1 extends Fragment implements OnChartGestureListener, OnCha
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarTotalIntesityValue = progress;
                 setSeekBar(5, progress);
-                localDataManager.setSharedPreference(getContext(), model + selectedChannel + "total", "" + progress);
+                localDataManager.setSharedPreference(getContext(), model + "total", "" + progress);
+                // total * kanal / 100
             }
 
             @Override
