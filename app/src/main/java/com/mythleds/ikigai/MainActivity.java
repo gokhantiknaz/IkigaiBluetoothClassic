@@ -410,7 +410,13 @@ public class MainActivity extends AppCompatActivity {
 
             int byteSira = 1;
             for (int i = 1; i < 7; i++) {
-                txData[++byteSira] = 0x01; //1. kanal   // 2
+                txData[++byteSira] = 0x01; //1. kanal
+                // 1.Kanaş 2
+                // 2.Kanal 15
+                // 3.Kanal 28
+                // 4.Kanal 41
+                // 5.Kanal 54
+                // 6.Kanal 67
 
                 String ch1brightness1 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel " + i + "f1", "0");
                 String ch1brightness2 = localDataManager.getSharedPreference(getApplicationContext(), model + "Channel " + i + "f2", "0");
